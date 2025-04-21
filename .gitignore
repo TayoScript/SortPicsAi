@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+.venv/
+*.sqlite3
+*.db
+
+# FastAPI / Uvicorn reload
+*.log
+
+# Jupyter/IPython 
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.*
+
+# System
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Uploads & temporary media 
+uploads/
+media/
+*.jpg
+*.png
+
+# PyTorch / Hugging Face cache
+~/.cache/
+.cache/
+*.ckpt
+*.pt
+*.pth
+
+
