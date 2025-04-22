@@ -8,10 +8,19 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app = FastAPI() 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 processor = BlipProcessor.from_pretrained(
     "Salesforce/blip-image-captioning-base",
@@ -33,18 +42,23 @@ prompt = PromptTemplate(
 chain = prompt | llm 
 
 @app.post("/upload/")
-async def upload_image(file: UploadFile = File(...)):
-    image_data = await file.read()
-    image = Image.open(io.BytesIO(image_data)).convert('RGB')
+async def upload_images(files: List[UploadFile] = File(...)):
+    results = []
 
-    inputs = processor(images=image, return_tensors="pt")
-    out = model.generate(**inputs)
-    caption = processor.decode(out[0], skip_special_tokens=True)
+    for file in files:
+        image_data = await file.read()
+        image = Image.open(io.BytesIO(image_data)).convert('RGB')
 
-   
-    result = chain.invoke({"caption": caption}) 
+        inputs = processor(images=image, return_tensors="pt")
+        out = model.generate(**inputs)
+        caption = processor.decode(out[0], skip_special_tokens=True)
 
-    return {
-        "caption": caption,
-        "tags": result
-    }
+        result = chain.invoke({"caption": caption})
+
+        results.append({
+            "filename": file.filename,
+            "caption": caption,
+            "tags": result
+        })
+
+    return results
